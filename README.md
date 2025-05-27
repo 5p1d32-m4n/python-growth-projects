@@ -32,15 +32,15 @@
 6. Chaining: Pipe multiple operations together (`csvx clean data.csv | csvx filter 'status=="active"' | csvx sort by date`)
 
 **Implementation Highlights**:
-Use click or typer for CLI interface
+Use `click` or `typer` for CLI interface
 
-pandas for data manipulation backbone
+`pandas` for data manipulation backbone
 
-rich for beautiful console output
+`rich` for beautiful console output
 
-Add progress bars with tqdm for large files
+Add progress bars with `tqdm` for large files
 
-Include comprehensive --help with examples
+Include comprehensive `--help` with examples
 
 ## Simple Web API (Django) For Project CMS
 
