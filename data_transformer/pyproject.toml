@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data_transformer"
+version = "0.1.0"
+description = "My data transformation CLI Tool"
+authors = [{name = "Brandon J. Baker", email = "brandon.j.baker1011@gmail.com"}]
+dependencies = ["click>=8.0.0"]
+
+[project.scripts]
+mycli = "data_transformer.cli:main"
