@@ -1,5 +1,6 @@
 import argparse
 import mimetypes
+from utils import convert_csv_to_json
 
 def main():
     parser = argparse.ArgumentParser(description="A data transformation tool for the busy dev.")
@@ -17,6 +18,9 @@ def main():
     print(f"Processing ${args.file}")
     if mime_type:
         print(f"Detected MIME type: {mime_type}")
+    if mime_type == "text/csv":
+        print("CSV file detected.")
+        convert_csv_to_json(args.file)
     if args.verbose:
         print("Enabled verbosity.")
 
