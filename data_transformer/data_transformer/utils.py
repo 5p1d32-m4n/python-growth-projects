@@ -2,6 +2,9 @@ import sys
 import csv
 import io
 import json
+import pandas as pd
+import re
+import shlex
 
 
 def convert_csv_to_json(input_path: str):
@@ -95,6 +98,54 @@ def convert_json_to_csv(input_path: str):
         print(f"JSON to CSV conversion failed: {str(e)}")
         sys.exit(1)
 
+def parse_filter_string(filter_string: str):
+    """
+    Parse a single filter stirng like "Column = 'Value'", "Age > 30", etc.
+    Parse a filter string into a dict  with 'column', 'operator', and 'value'.
+    Handles quoted strings & numberical values.
+    """
+    # Regex to capture column name, operator and value.
+    # Group 1: Column name (alphanumeric and underscores)
+    # Group 2: Operator (e.g., =, >, <, !=, >=, <=, contains, like, in)
+    # Group 3: Value (quoted string, number or bare word)
 
-def filter_csv(input_path: str, *params):
-    pass
+    match = re.match(
+        r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([=!><]+|contains|like|in|startswith|endswith)\s*(.+)\s*$",
+        filter_string,
+        re.IGNORECASE
+    )
+
+    if not match:
+        raise ValueError(f"Invalid filter format: '{filter_string}', Expected format: 'Columnt Operator Value'")
+    column = match.group(1)
+    operator = match.group(2).lower()
+    value_str = match.group(3).strip()
+
+    # Now I'm going to parse the value string inot its appropriate type.
+    value = None
+    if(value_str.startswith("'") and value_str.endswith("'")) or \
+        (value_str.startswith('"') and value_str.endswith('"')):
+        # It's a quoted string
+        vlaue = value_str[1:-1]
+    elif operator == 'in':
+        # For 'in' operator, expect a comma-separated list of values, potentially quoted
+        value = [v.strip().strip("'\"") for v in value_str.split(',')]
+    else:
+        # Try converting to number, then boolean, otherwise keep as string
+        try:
+            value = int(value_str)
+        except ValueError:
+            try:
+                value = float(value_str)
+            except ValueError:
+                if value_str.lower() == 'true':
+                    value = True
+                elif value_str.lower() == 'false':
+                    value = False
+                else:
+                    value = value_str # this keeps it as a string if all else fails.
+    return {'column': column, 'operator':operator, 'value': value}
+
+def filter_csv(input_path: str, filter_args: str):
+    """ Filter CSV data based on provided arguments """
+    return str(input_path)
