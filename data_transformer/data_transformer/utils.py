@@ -94,3 +94,7 @@ def convert_json_to_csv(input_path: str):
     except Exception as e:
         print(f"JSON to CSV conversion failed: {str(e)}")
         sys.exit(1)
+
+
+def filter_csv(input_path: str, *params):
+    pass
