@@ -1,7 +1,7 @@
 import argparse
 import mimetypes
 import json
-from data_transformer.utils import convert_csv_to_json, convert_json_to_csv, filter_csv
+from utils import convert_csv_to_json, convert_json_to_csv, reduce_csv
 
 
 def main():
@@ -11,7 +11,8 @@ def main():
     # Add arguments
     parser.add_argument('file', help="Input file.")
     parser.add_argument('-o', '--output', help='output file.')
-    parser.add_argument('-f', '--filter', help='Filter for specific data processing.')
+    parser.add_argument(
+        '-f', '--filter', help='Filter for specific data processing.')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Enable verbose output.')
 
@@ -28,7 +29,8 @@ def main():
         data = convert_csv_to_json(args.file)
         if args.filter:
             print(f"Applying filter: {args.filter}")
-            data = filter_csv(args.file, args.filter)
+            data = reduce_csv(args.file, args.filter)
+            print(f"Filtered data: {data}")
         if args.output:
             print(f"Writing output to: {args.output}")
             with open(args.output, 'w') as f:
