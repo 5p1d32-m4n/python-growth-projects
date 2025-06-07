@@ -98,6 +98,7 @@ def convert_json_to_csv(input_path: str):
         print(f"JSON to CSV conversion failed: {str(e)}")
         sys.exit(1)
 
+
 def parse_filter_string(filter_string: str):
     """
     Parse a single filter stirng like "Column = 'Value'", "Age > 30", etc.
@@ -116,36 +117,64 @@ def parse_filter_string(filter_string: str):
     )
 
     if not match:
-        raise ValueError(f"Invalid filter format: '{filter_string}', Expected format: 'Columnt Operator Value'")
+        raise ValueError(
+            f"Invalid filter format: '{filter_string}', Expected format: 'Columnt Operator Value'")
     column = match.group(1)
     operator = match.group(2).lower()
     value_str = match.group(3).strip()
 
     # Now I'm going to parse the value string inot its appropriate type.
-    value = None
-    if(value_str.startswith("'") and value_str.endswith("'")) or \
-        (value_str.startswith('"') and value_str.endswith('"')):
-        # It's a quoted string
-        vlaue = value_str[1:-1]
-    elif operator == 'in':
-        # For 'in' operator, expect a comma-separated list of values, potentially quoted
-        value = [v.strip().strip("'\"") for v in value_str.split(',')]
-    else:
-        # Try converting to number, then boolean, otherwise keep as string
-        try:
-            value = int(value_str)
-        except ValueError:
-            try:
-                value = float(value_str)
-            except ValueError:
-                if value_str.lower() == 'true':
-                    value = True
-                elif value_str.lower() == 'false':
-                    value = False
-                else:
-                    value = value_str # this keeps it as a string if all else fails.
-    return {'column': column, 'operator':operator, 'value': value}
+    return {'column': column, 'operator': operator, 'value': value_str}
 
-def filter_csv(input_path: str, filter_args: str):
+
+def filter_csv(csv_row, filter_cond: dict):
     """ Filter CSV data based on provided arguments """
-    return str(input_path)
+    column = filter_cond['column']
+    operator = filter_cond['operator']
+    value = filter_cond['value']
+
+    # Get the value from the csv row (Also handle if columns doesn't exist)
+    row_value = csv_row.get(column, None)
+
+    # Perform comparison based on the operator:
+    if operator == '=':
+        return str(row_value) == str(value)
+    elif operator == '==':
+        return str(row_value) == str(value)
+    elif operator == '!=':
+        return str(row_value) != str(value)
+    elif operator == '>':
+        return str(row_value) > str(value)
+    elif operator == '<':
+        return str(row_value) < str(value)
+    elif operator == '>=':
+        return str(row_value) >= str(value)
+    elif operator == '<=':
+        return str(row_value) <= str(value)
+    elif operator.lower() == 'contains':
+        return str(value) in str(row_value)
+    elif operator.lower() == 'like':
+        return str(value) in str(row_value)
+    elif operator.lower() == 'in':
+        return str(value) in str(row_value)
+    else:
+        raise ValueError(f"Unsupported operator: {operator}")
+    return data
+
+
+def reduce_csv(input_path: str, filter_args: str):
+    """ Filter CSV data based on provided arguments """
+    print(f"Reading file: {input_path}")
+    try:
+        with open(input_path, "r") as f:
+            csv_reader = csv.DictReader(f)
+            filter_dict = parse_filter_string(filter_args)
+            data = [row for row in csv_reader if filter_csv(row, filter_dict)]
+            print(f"data for csv filtered: {data}")
+            return data
+    except FileNotFoundError:
+        print(f"Error: file not found - {input_path}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"CSV filtering has failed: {str(e)}")
+        sys.exit(1)
